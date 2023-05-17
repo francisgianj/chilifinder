@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={clsx("", montserrat.className)}>
         <Header />
-        {children}
+        <div className="mt-24">{children}</div>
       </body>
     </html>
   );

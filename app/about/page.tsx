@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function About() {
   return (
-    <div className="">
+    <div className="xd">
       <div className="my-8 prose prose-slate mx-auto lg:prose-lg">
         <h1>What is ChiliFinder?</h1>
         <p className="lead">

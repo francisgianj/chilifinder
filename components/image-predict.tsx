@@ -10,23 +10,24 @@ import preprocessImage from "@/utils/preprocess-image";
 import loadImage from "@/utils/load-image";
 import { CgSpinner } from "react-icons/cg";
 
-enum LabelEnum {
-  "BELL PEPPER" = "Bell Pepper",
-  "JALAPENO" = "Jalapeño",
-  "LONG CHILI" = "Long Chili",
-  "PIMIENTO PEPPER" = "Pimiento Pepper",
-  "SILING LABUYO" = "Siling Labuyo",
-  "THAI CHILI" = "Thai Chili",
+enum Label {
+  BELL_PEPPER = "Bell Pepper 🫑",
+  JALAPENO = "Jalapeño",
+  LONG_CHILI = "Long Chili ",
+  PIMIENTO_PEPPER = "Pimiento Pepper 🍅",
+  SILING_LABUYO = "Siling Labuyo 🌶️",
+  THAI_CHILI = "Thai Chili 🌶️",
 }
 
-const LABEL_MAPPER: { [n: number]: LabelEnum } = {
-  0: LabelEnum["BELL PEPPER"],
-  1: LabelEnum["JALAPENO"],
-  2: LabelEnum["LONG CHILI"],
-  3: LabelEnum["PIMIENTO PEPPER"],
-  4: LabelEnum["SILING LABUYO"],
-  5: LabelEnum["THAI CHILI"],
+const LABEL_MAPPER: { [n: number]: Label } = {
+  0: Label.BELL_PEPPER,
+  1: Label.JALAPENO,
+  2: Label.LONG_CHILI,
+  3: Label.PIMIENTO_PEPPER,
+  4: Label.SILING_LABUYO,
+  5: Label.THAI_CHILI,
 };
+
 
 const asyncModelAtom = atom(async () => {
   const timeLoadModel = performance.now();
@@ -127,7 +128,7 @@ export default function ImagePredict() {
 
       {isModelLoading ? (
         <div className="flex gap-2 items-center">
-          <p className="text-sm md:text-base text-red-500">Loading model...</p>
+          <p className="text-sm md:text-base">Loading model...</p>
           <CgSpinner className="text-sm md:text-base text-red-500 animate-spin" />
         </div>
       ) : (
@@ -143,10 +144,13 @@ export default function ImagePredict() {
         loading process.
       </p>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-2">
         {results.map((result, index) => (
-          <div key={index} className="mx-auto rounded-lg bg-gray-200 p-4">
-            <div className="relative w-56 h-56 rounded-lg overflow-hidden">
+          <div
+            key={index}
+            className="rounded-lg overflow-hidden bg-white drop-shadow-lg border border-gray-300/20"
+          >
+            <div className="relative w-56 h-56 bg-white">
               <Image
                 src={URL.createObjectURL(result.imageFile)}
                 alt="image"
@@ -155,17 +159,25 @@ export default function ImagePredict() {
               />
             </div>
 
-            <div className="">
-              <h1 className="text-2xl font-bold">
+            <div className="p-2 space-y-1">
+              <p className="text-lg">
                 {result.isProcessing ? "Predicting..." : result.label}
-              </h1>
-              <p className="text-sm text-gray-500">
-                {result.probability?.toFixed(2)}
               </p>
-              {result.timeInference && (
-                <p className="text-sm text-gray-500">
-                  {(result.timeInference / 1000).toFixed(2)} secs
-                </p>
+
+              {result.isProcessing ? (
+                <>
+                  <div className="animate-pulse bg-gray-500 h-4 w-3/4 rounded-sm" />
+                  <div className="animate-pulse bg-gray-500 h-4 w-1/2 rounded-sm" />
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500">
+                    {result.probability?.toFixed(2)}% probability
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {((result?.timeInference || 0) / 1000).toFixed(2)} secs
+                  </p>
+                </>
               )}
             </div>
           </div>

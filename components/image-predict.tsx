@@ -4,99 +4,104 @@ import * as tf from "@tensorflow/tfjs";
 import { loadable } from "jotai/utils";
 import { useState, useCallback } from "react";
 import { atom, useAtom } from "jotai";
-import NextImage from "next/image";
+import Image from "next/image";
 import { useDropzone } from "react-dropzone";
+import preprocessImage from "@/utils/preprocess-image";
+import loadImage from "@/utils/load-image";
+import { CgSpinner } from "react-icons/cg";
+
+enum LabelEnum {
+  "BELL PEPPER" = "Bell Pepper",
+  "JALAPENO" = "Jalapeño",
+  "LONG CHILI" = "Long Chili",
+  "PIMIENTO PEPPER" = "Pimiento Pepper",
+  "SILING LABUYO" = "Siling Labuyo",
+  "THAI CHILI" = "Thai Chili",
+}
+
+const LABEL_MAPPER: { [n: number]: LabelEnum } = {
+  0: LabelEnum["BELL PEPPER"],
+  1: LabelEnum["JALAPENO"],
+  2: LabelEnum["LONG CHILI"],
+  3: LabelEnum["PIMIENTO PEPPER"],
+  4: LabelEnum["SILING LABUYO"],
+  5: LabelEnum["THAI CHILI"],
+};
 
 const asyncModelAtom = atom(async () => {
-  const model = await tf.loadLayersModel(
-    "https://chilifinder.vercel.app/static/model/model.json"
-  );
+  const timeLoadModel = performance.now();
+  const model = await tf.loadLayersModel("/static/model-tfjs/model.json");
 
-  return model;
+  return {
+    model,
+    timeLoadModel: performance.now() - timeLoadModel,
+  };
 });
 
 const loadableModelAtom = loadable(asyncModelAtom);
 
-const loadImage = (file: File): Promise<HTMLImageElement> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = (e) => reject(e);
-      img.src = e.target?.result as string;
-    };
-
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
-
-const preprocessImage = async (
-  image: HTMLImageElement
-): Promise<tf.Tensor3D | tf.Tensor<tf.Rank>> => {
-  return tf.tidy(() => {
-    const tensor = tf.browser.fromPixels(image);
-    const resized = tf.image.resizeBilinear(tensor, [224, 224]); // Resizing the image to the required input dimensions of our model
-    const normalized = resized.div(255); // Normalize pixel values between 0 and 1
-    const expanded = normalized.expandDims(); // Add an extra dimension to represent the batch size
-
-    return expanded;
-  });
-};
-
-const chilis = [
-  "bell pepper",
-  "jalapeno",
-  "long chili",
-  "pimiento pepper",
-  "siling labuyo",
-  "thai chili",
-];
-
 export default function ImagePredict() {
+  const [loadModel, setLoadModel] = useState(false);
   const [modelAtom] = useAtom(loadableModelAtom);
+  const isModelLoading =
+    modelAtom.state === "loading" || modelAtom.state !== "hasData";
 
-  const [processing, setProcessing] = useState(false);
-  const [predicted, setPredicted] = useState<number | null>(null);
-  const [image, setImage] = useState<File | null>(null);
+  const [results, setResults] = useState<
+    {
+      label?: string;
+      isProcessing?: boolean;
+      timeInference?: number;
+      probability?: number;
+      imageFile: File;
+    }[]
+  >([]);
 
-  const onDrop = useCallback((acceptedFiles: any) => {
-    // Do something with the files
-    const file = acceptedFiles?.[0] as File;
+  const onDrop = useCallback(
+    async (acceptedFiles: any) => {
+      // Do something with the files
+      const image = acceptedFiles?.[0] as File;
+      if (isModelLoading || !image) return;
 
-    setImage(file);
-  }, []);
+      let timeInference = performance.now();
+      setResults((prev) => [
+        ...prev,
+        {
+          isProcessing: true,
+          imageFile: image,
+        },
+      ]);
+
+      const img = await loadImage(image);
+      const processedImg = await preprocessImage(img);
+
+      if (!modelAtom?.data && !processedImg) return;
+
+      const model = modelAtom?.data.model;
+
+      const prediction = model.predict(processedImg) as tf.Tensor<tf.Rank>;
+      const predictedClassIndex = tf.argMax(prediction, -1).dataSync()[0];
+
+      timeInference = performance.now() - timeInference;
+
+      setResults((prev) => [
+        ...prev.slice(0, prev.length - 1),
+        {
+          label: LABEL_MAPPER[predictedClassIndex],
+          probability: prediction.dataSync()[predictedClassIndex],
+          timeInference,
+          imageFile: image,
+        },
+      ]);
+    },
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [modelAtom]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
-  if (modelAtom.state === "loading" || modelAtom.state !== "hasData") {
-    return <div>Loading...</div>;
-  }
-
-  const model = modelAtom.data;
-
-  const predict = async () => {
-    if (!model || !image) return;
-
-    setPredicted(null);
-    setProcessing(true);
-
-    const img = await loadImage(image);
-    const processedImg = await preprocessImage(img);
-
-    if (!model && !processedImg) return;
-
-    const prediction = model.predict(processedImg) as tf.Tensor<tf.Rank>;
-    const predictedClassIndex = tf.argMax(prediction, -1).dataSync()[0];
-
-    setPredicted(predictedClassIndex);
-    setProcessing(false);
-  };
-
   return (
-    <div>
+    <div className="space-y-2">
       <div
         {...getRootProps()}
         className="px-2 py-8 md:px-4 md:py-16 flex items-center justify-center cursor-pointer border-2 border-gray-400 hover:border-gray-800 border-dotted"
@@ -106,41 +111,66 @@ export default function ImagePredict() {
           placeholder="Upload an image"
           accept="image/jpeg, image/jpg, image/bmp, image/png"
           className=""
-          disabled={processing}
           {...getInputProps()}
         />
         {isDragActive ? (
           <p>Drop the files here ...</p>
         ) : (
-          <p>Drag n drop some files here, or click to select files</p>
+          <div className="text-gray-400 text-center space-y-2">
+            <p>Drag and drop some files here, or click to select files</p>
+            <p className="italic text-sm">
+              (Only *.jpeg, *.jpg, *.bmp, *.png images will be accepted)
+            </p>
+          </div>
         )}
       </div>
 
-      {image && (
-        <div className="space-y-4">
-          <NextImage
-            src={URL.createObjectURL(image)}
-            alt="image"
-            width={300}
-            height={300}
-          />
-
-          {predicted !== null && (
-            <div>
-              <h1 className="text-2xl font-bold">
-                {chilis[predicted as number]}
-              </h1>
-            </div>
-          )}
-
-          <button
-            onClick={predict}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Predict
-          </button>
+      {isModelLoading ? (
+        <div className="flex gap-2 items-center">
+          <p className="text-sm md:text-base text-red-500">Loading model...</p>
+          <CgSpinner className="text-sm md:text-base text-red-500 animate-spin" />
         </div>
+      ) : (
+        <p className="text-sm md:text-base text-red-500">
+          Model loaded in {(modelAtom.data.timeLoadModel / 1000).toFixed(2)}{" "}
+          secs
+        </p>
       )}
+
+      <p className="text-xs md:text-sm text-gray-600">
+        The pre-trained model will be loaded as soon as you drop or upload an
+        image for the first time. It may take a few seconds to complete the
+        loading process.
+      </p>
+
+      <div className="flex flex-wrap gap-4">
+        {results.map((result, index) => (
+          <div key={index} className="mx-auto rounded-lg bg-gray-200 p-4">
+            <div className="relative w-56 h-56 rounded-lg overflow-hidden">
+              <Image
+                src={URL.createObjectURL(result.imageFile)}
+                alt="image"
+                fill
+                sizes="100%"
+              />
+            </div>
+
+            <div className="">
+              <h1 className="text-2xl font-bold">
+                {result.isProcessing ? "Predicting..." : result.label}
+              </h1>
+              <p className="text-sm text-gray-500">
+                {result.probability?.toFixed(2)}
+              </p>
+              {result.timeInference && (
+                <p className="text-sm text-gray-500">
+                  {(result.timeInference / 1000).toFixed(2)} secs
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

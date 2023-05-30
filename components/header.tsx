@@ -31,7 +31,7 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 w-full text-white h-12 px-4 md:px-8 bg-red-500 flex items-center justify-between">
+    <header className="w-full text-white h-12 px-4 md:px-8 bg-red-500 flex items-center justify-between">
       <Link href="/" className="select-none">
         <div className="flex justify-between gap-2 items-center">
           <Image

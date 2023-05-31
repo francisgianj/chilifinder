@@ -1,5 +1,11 @@
 import ImagePredict from "@/components/image-predict";
 
+export const metadata = {
+  title: "Chili Predict",
+  description:
+    "Perform image prediction directly in the browser using a pre-trained CNN MobileNet model to recognize Bell Pepper, Jalapeño, Long Chili, Pimiento Pepper, Siling Labuyo, and Thai Chili.",
+};
+
 export default async function Predict() {
   return (
     <div className="max-w-3xl mx-auto px-4 md:px-0">

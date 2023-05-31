@@ -1,6 +1,7 @@
 import Image, { StaticImageData } from "next/image";
 import RovicDisplayPicure from "@/public/static/images/rovic-display-picture.jpg";
 import FrancisDisplayPicture from "@/public/static/images/francis-display-picture.jpg";
+import MikeDisplayPicture from "@/public/static/images/mike-display-picture.jpg";
 import { IoLogoFacebook, IoLogoGithub } from "react-icons/io5";
 import Link from "next/link";
 
@@ -22,6 +23,15 @@ const researchers = [
     displayPicture: RovicDisplayPicure,
     links: {
       facebook: "https://www.facebook.com/amiel.ancajas",
+    },
+  },
+  {
+    name: "Mike Jerard del Rosario",
+    course: "BS Computer Science",
+    school: "AMA University",
+    displayPicture: MikeDisplayPicture,
+    links: {
+      facebook: "https://www.facebook.com/mikejerard.delrosario",
     },
   },
 ];

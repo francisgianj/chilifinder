@@ -1,7 +1,9 @@
 import ResearcherCards from "@/components/researchers-cards";
 
 export const metadata = {
-  title: "The Researchers | ChiliFinder",
+  title: "The Researchers",
+  description:
+    "Get to know the brilliant minds behind ChiliFinder, a team of fourth-year Computer Science students hailing from AMA University in Quezon City, Philippines.",
 };
 
 export default function TheResearchers() {
@@ -10,8 +12,9 @@ export default function TheResearchers() {
       <div className="my-8 prose prose-sm prose-slate mx-auto lg:prose-base">
         <h1>The Researchers</h1>
         <p className="lead">
-          4th year BS Computer Science students of AMA University, Quezon City,
-          Philippines.
+          Get to know the brilliant minds behind ChiliFinder, a team of
+          fourth-year Computer Science students hailing from AMA University in
+          Quezon City, Philippines.
         </p>
       </div>
       <ResearcherCards />

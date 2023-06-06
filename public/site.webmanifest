@@ -1,19 +1,47 @@
 {
-    "name": "ChiliFinder",
-    "short_name": "ChiliFinder",
-    "icons": [
-        {
-            "src": "/android-chrome-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "/android-chrome-256x256.png",
-            "sizes": "256x256",
-            "type": "image/png"
-        }
-    ],
-    "theme_color": "#ebb402",
-    "background_color": "#ebb402",
-    "display": "standalone"
+  "name": "ChiliFinder",
+  "short_name": "ChiliFinder",
+  "description": "ChiliFinder is the product of our research entitled Automatic Chili Pepper Plant Species Identification using Convolutional Neural Networks presented to the faculty of the College of Computer Studies, AMA University, Quezon City, Philippines.",
+  "start_url": "/",
+  "id": "/",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#ef4444",
+  "background_color": "#ef4444",
+  "display": "standalone",
+  "orientation": "portrait"
 }

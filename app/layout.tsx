@@ -239,7 +239,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={clsx("", montserrat.className)}>
         <Header />
-        <div className="mt-12">{children}</div>
+        <div className="mt-12 mb-8">{children}</div>
 
         <Script id="sw">{`
         if ('serviceWorker' in navigator) {

@@ -7,6 +7,13 @@ workbox.routing.registerRoute(
   new workbox.strategies.CacheFirst()
 );
 
+const staticPages = [
+  "/",
+  "/predict",
+  "/about",
+  "/the-researchers",
+]
+
 const modelFiles = [
   "/static/model-tfjs/model.json?v=1.1.0",
   "/static/model-tfjs/group1-shard1of4.bin?v=1.1.0",
@@ -16,9 +23,10 @@ const modelFiles = [
   // Add more files if necessary
 ];
 
+workbox.precaching.precacheAndRoute(staticPages);
 workbox.precaching.precacheAndRoute(modelFiles);
 
 workbox.routing.registerRoute(
   ({ url }) => url.pathname.endsWith(".json") || url.pathname.endsWith(".bin"),
-  new workbox.strategies.NetworkFirst()
+  new workbox.strategies.CacheFirst()
 );
